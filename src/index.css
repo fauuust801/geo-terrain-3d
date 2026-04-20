@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 全局重置 */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Canvas 抗锯齿优化 */
+canvas {
+  display: block;
+  touch-action: none;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}
+
+/* 等高线高亮动效 */
+@keyframes contour-pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1.0; }
+}
+
+.contour-active {
+  animation: contour-pulse 1.5s ease-in-out infinite;
+}

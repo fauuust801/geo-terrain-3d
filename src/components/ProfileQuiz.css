@@ -1,0 +1,114 @@
+/* src/components/ProfileQuiz.css */
+
+.profile-quiz-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;  /* ✅ 改：只占右侧 */
+  width: 500px;  /* ✅ 改：固定宽度 */
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.98);  /* ✅ 改：半透明深色背景 */
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  padding: 20px;
+  overflow-y: auto;  /* ✅ 新增：内容过多时可滚动 */
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);  /* ✅ 新增：左侧阴影 */
+  animation: slideIn 0.3s ease-out;  /* ✅ 新增：滑入动画 */
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.profile-quiz-panel {
+  background-color: transparent;  /* ✅ 改：去掉多余背景 */
+  border: none;  /* ✅ 改：去掉边框 */
+  padding: 0;
+  width: 100%;
+}
+
+.quiz-header {
+  display: flex;
+  flex-direction: column;  /* ✅ 改：垂直排列 */
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #334155;
+}
+
+.quiz-header h3 {
+  color: #e2e8f0;
+  font-size: 16px;
+  margin: 0;
+}
+
+.result-badge {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.result-badge.correct {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid #10b981;
+}
+
+.result-badge.wrong {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid #ef4444;
+}
+
+.quiz-grid {
+  display: grid;
+  grid-template-columns: 1fr;  /* ✅ 改：单列布局（右侧空间窄） */
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.quiz-option {
+  position: relative;
+  min-height: 180px;  /* ✅ 改：减小高度 */
+  background-color: rgba(30, 41, 59, 0.5);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.option-label {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background-color: rgba(15, 23, 42, 0.9);
+  color: #94a3b8;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 10;
+}
+
+.reset-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.reset-button:hover {
+  background-color: #2563eb;
+}
