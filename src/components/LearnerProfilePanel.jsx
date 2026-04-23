@@ -326,3 +326,26 @@ function Tag({ children }) {
     </span>
   )
 }
+
+import { supabase } from '../supabaseClient'
+
+// 提交按钮的处理函数
+const handleSubmitProfile = async () => {
+  
+  // 从你现有的 store 或 props 里取数据，字段名按你实际的来
+  const { data, error } = await supabase
+    .from('learner_profiles')
+    .upsert({
+      student_id: studentId,           // 学生学号
+      quiz_accuracy: quizAccuracy,     // 答题正确率
+      avg_reaction_time: avgReaction,  // 平均反应时间
+      profile_data: fullProfileData,   // 完整画像 JSON
+    }, { onConflict: 'student_id' })   // 同一学号重复提交则覆盖
+
+  if (error) {
+    console.error('提交失败：', error)
+    alert('数据提交失败，请检查网络')
+  } else {
+    alert('画像数据已成功提交！')
+  }
+}
