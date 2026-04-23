@@ -1,19 +1,22 @@
 // vite.config.js
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import glsl from 'vite-plugin-glsl'  // ✅ 新增
+import glsl from 'vite-plugin-glsl'
 import path from 'path'
 
 export default defineConfig({
+  // ✅ 新增这一行，把 your-repo-name 换成你的 GitHub 仓库名
+  base: '/geo-terrain-3d/',
+  
   plugins: [
     react(),
-    glsl(),  // ✅ 新增：让 Vite 能识别 .glsl 文件
+    glsl(),
   ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
-    extensions: ['.js', '.jsx', '.json', '.glsl'],  // ✅ 加上 .glsl
+    extensions: ['.js', '.jsx', '.json', '.glsl'],
   },
   server: {
     hmr: {
