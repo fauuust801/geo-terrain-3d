@@ -1,31 +1,41 @@
 // src/components/ProfileAnchorPicker.jsx
-// 剖面锚点拾取器 Profile Anchor Picker
-// 功能：在3D地形上点击时放置两个锚点，触发出题
-
-import { useRef } from 'react'
-import { useThree } from '@react-three/fiber'
+import { useMemo } from 'react'
 import { useQuizStore } from '../stores/quizStore'
+import useTerrainStore from '../stores/useTerrainStore'
+import { getHeight, heightToSceneY } from '../utils/terrainGenerator'
 
 /**
- * 锚点可视化标记 Anchor Marker Sphere
+ * 锚点球标记 —— Y 高度从 getHeight 实时计算，不受 y=0 平面影响
  */
 function AnchorMarker({ position, color }) {
+  const ve = useTerrainStore(s => s.verticalExaggeration)
+  // ✅ 用 getHeight + VE 算出标记在地形表面的真实 Y
+  const y = heightToSceneY(getHeight(position.x, position.z), ve)
+
   return (
-    <mesh position={[position.x, position.y || 0, position.z]}>
+    <mesh position={[position.x, y + 0.12, position.z]}>
       <sphereGeometry args={[0.5, 16, 16]} />
-      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.5} />
+      <meshStandardMaterial
+        color={color}
+        emissive={color}
+        emissiveIntensity={0.5}
+      />
     </mesh>
   )
 }
 
 /**
- * 锚点连线 Anchor Line
+ * 锚点连线 —— 同样贴地形表面
  */
 function AnchorLine({ p0, p1 }) {
-  const points = [
-    [p0.x, p0.y || 0, p0.z],
-    [p1.x, p1.y || 0, p1.z],
-  ]
+  const ve = useTerrainStore(s => s.verticalExaggeration)
+  const y0 = heightToSceneY(getHeight(p0.x, p0.z), ve) + 0.08
+  const y1 = heightToSceneY(getHeight(p1.x, p1.z), ve) + 0.08
+
+  const arr = useMemo(
+    () => new Float32Array([p0.x, y0, p0.z, p1.x, y1, p1.z]),
+    [p0.x, p0.z, p1.x, p1.z, y0, y1]
+  )
 
   return (
     <line>
@@ -33,7 +43,7 @@ function AnchorLine({ p0, p1 }) {
         <bufferAttribute
           attach="attributes-position"
           count={2}
-          array={new Float32Array(points.flat())}
+          array={arr}
           itemSize={3}
         />
       </bufferGeometry>
@@ -43,58 +53,24 @@ function AnchorLine({ p0, p1 }) {
 }
 
 /**
- * 主组件：拾取器 + 可视化
+ * 主组件：纯可视化，点击逻辑已移至 TerrainMesh
  */
 export default function ProfileAnchorPicker() {
-  const { camera, raycaster, scene } = useThree()
-  const terrainRef = useRef()
+  const { anchorPoints } = useQuizStore()
 
-  const { phase, anchorPoints, setAnchor } = useQuizStore()
-
-  /**
-   * 处理地形点击 Handle terrain click
-   */
-  const handleTerrainClick = (event) => {
-    // 只在 idle 或 picking 阶段响应点击
-    if (phase !== 'idle' && phase !== 'picking') return
-
-    event.stopPropagation()
-
-    // 从 R3F 事件中获取交点
-    const intersect = event
-    if (!intersect || !intersect.point) return
-
-    const { x, z } = intersect.point
-    const y = intersect.point.y // 保留高度用于可视化
-
-    // 判断当前要放第几个锚点
-    const anchorIndex = anchorPoints[0] === null ? 0 : 1
-
-    console.log(`📍 [Anchor ${anchorIndex + 1}] 已放置:`, { x, z })
-
-    setAnchor(anchorIndex, { x, z, y })
-  }
-
+  // ✅ 删除了 y=0 的不可见平面！
+  //    点击事件现在由 TerrainMesh 统一处理，坐标精准落在地形表面
   return (
     <group>
-      {/* 透明交互层覆盖整个地形（接收点击） */}
-      <mesh
-        ref={terrainRef}
-        onClick={handleTerrainClick}
-        position={[0, 0, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        visible={false} // 不可见，仅用于接收射线检测
-      >
-        <planeGeometry args={[100, 100]} />
-        <meshBasicMaterial transparent opacity={0} />
-      </mesh>
-
-      {/* 锚点标记 */}
-      {anchorPoints[0] && <AnchorMarker position={anchorPoints[0]} color="#ff4444" />}
-      {anchorPoints[1] && <AnchorMarker position={anchorPoints[1]} color="#4444ff" />}
-
-      {/* 连线 */}
-      {anchorPoints[0] && anchorPoints[1] && <AnchorLine p0={anchorPoints[0]} p1={anchorPoints[1]} />}
+      {anchorPoints[0] && (
+        <AnchorMarker position={anchorPoints[0]} color="#ff4444" />
+      )}
+      {anchorPoints[1] && (
+        <AnchorMarker position={anchorPoints[1]} color="#4444ff" />
+      )}
+      {anchorPoints[0] && anchorPoints[1] && (
+        <AnchorLine p0={anchorPoints[0]} p1={anchorPoints[1]} />
+      )}
     </group>
   )
 }

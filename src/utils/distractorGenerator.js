@@ -14,7 +14,7 @@ export const TRANSFORM_TYPES = {
 /** 默认配置 Default options */
 const DEFAULT_CONFIG = {
   distractorCount: 3,  // 生成3个错误项 + 1个正确项 = 4选1
-  smoothWindow: 9,     // 平滑窗口（奇数更稳定）
+  smoothWindow: 55,     // 平滑窗口（奇数更稳定）
   shiftRatio: 0.25,    // 循环平移比例（N * 0.25）
   exaggerateKPool: [1.6, 0.4], // 振幅系数池
 }

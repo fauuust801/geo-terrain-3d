@@ -5,6 +5,8 @@ import { create } from 'zustand'
 import { sampleProfile } from '../utils/profileSampler'
 import { generateDistractorOptions } from '../utils/distractorGenerator'
 import telemetry from '../utils/telemetry'
+import { getHeight } from '../utils/terrainGenerator'
+
 
 /**
  * 答题流程状态机 Quiz Phase State Machine
@@ -48,6 +50,9 @@ export const useQuizStore = create((set, get) => ({
     const { anchorPoints } = get()
     const [p0, p1] = anchorPoints
 
+    console.log('🗺️ p0 锚点:', p0, '→ getHeight:', getHeight(p0.x, p0.z))
+    console.log('🗺️ p1 锚点:', p1, '→ getHeight:', getHeight(p1.x, p1.z))
+ 
     if (!p0 || !p1) {
       console.warn('[quizStore] generateQuiz: 锚点未完整放置')
       return

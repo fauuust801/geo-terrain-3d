@@ -18,6 +18,7 @@
  *    - 性能影响: 零。useEffect 在渲染提交后异步执行，
  *      且仅当 minH/maxH 变化时触发
  */
+
 import React, { useRef, useMemo, useCallback, useEffect } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
@@ -32,7 +33,7 @@ import {
 import vertexShader from '../../shaders/terrain.vert.glsl'
 import fragmentShader from '../../shaders/terrain.frag.glsl'
 import { useDwellTimer } from '../../utils/useDwellTimer'
-
+import { useQuizStore } from '../../stores/quizStore'
 
 export default function TerrainMesh() {
   const meshRef = useRef()
@@ -47,7 +48,9 @@ export default function TerrainMesh() {
   const mode = useTerrainStore(s => s.mode)
   const addProfilePoint = useTerrainStore(s => s.addProfilePoint)
   const { startTimer, stopTimer } = useDwellTimer('地形观察')
-
+  const quizPhase        = useQuizStore(s => s.phase)
+  const quizAnchorPoints = useQuizStore(s => s.anchorPoints)
+  const setQuizAnchor    = useQuizStore(s => s.setAnchor)
 
   // ━━━━━━━━━━━━━━━━ Geometry 构建 ━━━━━━━━━━━━━━━━
 
@@ -187,13 +190,31 @@ export default function TerrainMesh() {
     setActiveElevation(-1)
   }, [setHoveredPosition, setActiveElevation, stopTimer])
 
-  const handleClick = useCallback((event) => {
-    if (mode !== 'B') return
-    event.stopPropagation()
-    const point = event.point
+ // 替换原有的 handleClick：
+const handleClick = useCallback((event) => {
+  event.stopPropagation()          // 始终拦截，不再透传到 y=0 平面
+  const point = event.point        // ✅ 真实地形面交点，y 值正确
+
+  // ── 模式 B：剖面测量（优先级高于测验）──────────────────
+  if (mode === 'B') {
     const rawH = getHeight(point.x, point.z)
     addProfilePoint({ x: point.x, z: point.z, height: rawH })
-  }, [mode, addProfilePoint])
+    return
+  }
+
+  // ── 非 B 模式：测验锚点拾取 ───────────────────────────
+  if (quizPhase === 'idle' || quizPhase === 'picking') {
+    const anchorIndex = quizAnchorPoints[0] === null ? 0 : 1
+    console.log(`📍 [Anchor ${anchorIndex + 1}] 已放置:`, {
+      x: point.x.toFixed(3),
+      z: point.z.toFixed(3),
+      getHeight: getHeight(point.x, point.z).toFixed(1) + 'm',
+    })
+    setQuizAnchor(anchorIndex, { x: point.x, z: point.z, y: point.y })
+  }
+}, [mode, quizPhase, quizAnchorPoints, setQuizAnchor, addProfilePoint])
+ 
+
 
 
   // ━━━━━━━━━━━━━━━━ 渲染 ━━━━━━━━━━━━━━━━

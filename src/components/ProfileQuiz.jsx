@@ -1,19 +1,46 @@
-// src/components/ProfileQuiz.jsx
-// 剖面图答题面板 Profile Quiz Panel (2×2 Grid)
-
+// src/components/ProfileQuiz.jsx（或与你原文件相同路径）
+import { useMemo } from 'react'
 import { useQuizStore } from '../stores/quizStore'
-import ProfileChart from './ProfileOptionChart'  // ✅ 用你已有的测验组件
-import './ProfileQuiz.css' // 样式文件见下方
+import ProfileOptionChart from './ProfileOptionChart'
+import './ProfileQuiz.css'
 
 export default function ProfileQuiz() {
-  const { phase, options, correctIndex, selectedIndex, isCorrect, submitAnswer, resetQuiz } = useQuizStore()
+  const {
+    phase, options, correctIndex, selectedIndex,
+    isCorrect, submitAnswer, resetQuiz,
+  } = useQuizStore()
 
-  // 只在 answering 或 result 阶段显示面板
+  // ✅ 核心：遍历全部4个选项，求全局海拔极值，构造共享Y轴范围
+  //    所有选项图表使用同一个 yDomain → 坐标系统一 → 修复 Bug①②
+  const yDomain = useMemo(() => {
+    if (!options || options.length === 0) return null
+
+    let globalMin = Infinity
+    let globalMax = -Infinity
+
+    for (const curveData of options) {
+      for (const pt of curveData) {
+        if (pt.elevation < globalMin) globalMin = pt.elevation
+        if (pt.elevation > globalMax) globalMax = pt.elevation
+      }
+    }
+
+    if (!isFinite(globalMin)) return null
+
+    // 上下留 12% padding，再取整到 10m，坐标轴刻度更美观
+    const pad = Math.max((globalMax - globalMin) * 0.12, 20)
+    return {
+      min: Math.floor((globalMin - pad) / 10) * 10,
+      max: Math.ceil( (globalMax + pad) / 10) * 10,
+    }
+  }, [options])
+
   if (phase !== 'answering' && phase !== 'result') return null
 
   return (
     <div className="profile-quiz-overlay">
       <div className="profile-quiz-panel">
+
         {/* 标题栏 */}
         <div className="quiz-header">
           <h3>📐 请选择正确的地形剖面图</h3>
@@ -28,10 +55,9 @@ export default function ProfileQuiz() {
         <div className="quiz-grid">
           {options.map((curveData, idx) => {
             let chartStatus = 'default'
-
             if (phase === 'result') {
-              if (idx === correctIndex) chartStatus = 'correct'
-              else if (idx === selectedIndex) chartStatus = 'wrong'
+              if (idx === correctIndex)                          chartStatus = 'correct'
+              else if (idx === selectedIndex && !isCorrect)     chartStatus = 'wrong'
             } else if (selectedIndex === idx) {
               chartStatus = 'selected'
             }
@@ -39,9 +65,10 @@ export default function ProfileQuiz() {
             return (
               <div key={idx} className="quiz-option">
                 <div className="option-label">选项 {String.fromCharCode(65 + idx)}</div>
-                <ProfileChart
+                <ProfileOptionChart
                   data={curveData}
                   status={chartStatus}
+                  yDomain={yDomain}
                   onClick={phase === 'answering' ? () => submitAnswer(idx) : undefined}
                 />
               </div>
@@ -55,6 +82,7 @@ export default function ProfileQuiz() {
             🔄 下一题
           </button>
         )}
+
       </div>
     </div>
   )
