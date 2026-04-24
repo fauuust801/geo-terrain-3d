@@ -9,19 +9,60 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
-  width: 100%;
-  height: 100%;
+html {
+  /* ✅ 修复②：用 dvh 代替 100%/100vh
+     dvh = Dynamic Viewport Height，自动排除手机地址栏和底部导航栏
+     2023年起 iOS Safari / Chrome Android 全面支持 */
+  height: 100dvh;
   overflow: hidden;
 }
+
+body {
+  height: 100%;
+  overflow: hidden;
+  /* ✅ 修复 iOS 底部安全区（iPhone 的 Home Indicator 区域）*/
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+html {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+body {
+  height: 100%;
+  overflow: hidden;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+#root {
+  height: 100%;
+  /* ✅ 去掉 overflow:hidden，让面板自己管理滚动 */
+  overflow: visible;
+}
+
 
 /* Canvas 抗锯齿优化 */
 canvas {
   display: block;
+  /* touch-action: none 让 Three.js/R3F 接管所有触摸手势（旋转/缩放地形）
+     这是正确的——但侧边面板必须单独声明 touch-action: pan-y 来夺回滚动权 */
   touch-action: none;
 }
 
-/* 自定义滚动条 */
+/* ✅ 修复①：侧边面板滚动修复
+   给所有需要滚动的面板统一加这个类，或者直接在面板组件的最外层 div 上加 */
+.scrollable-panel {
+  overflow-y: auto;
+  /* iOS Safari 的惯性滚动（没有这行在 iPhone 上滑动会很卡） */
+  -webkit-overflow-scrolling: touch;
+  /* 告诉浏览器：这个元素要响应垂直方向的 touch，不要给 canvas 拦截 */
+  touch-action: pan-y;
+  /* 防止滚动到顶/底后触发整页刷新（iOS 橡皮筋效果） */
+  overscroll-behavior: contain;
+}
+
+/* 自定义滚动条（保留原有） */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -33,12 +74,16 @@ canvas {
   border-radius: 3px;
 }
 
-/* 等高线高亮动效 */
+/* 等高线高亮动效（保留原有） */
 @keyframes contour-pulse {
   0%, 100% { opacity: 0.8; }
-  50% { opacity: 1.0; }
+  50%       { opacity: 1.0; }
 }
-
 .contour-active {
   animation: contour-pulse 1.5s ease-in-out infinite;
+}
+
+/* ✅ 修复②补充：移动端点击去掉蓝色高亮闪烁 */
+* {
+  -webkit-tap-highlight-color: transparent;
 }

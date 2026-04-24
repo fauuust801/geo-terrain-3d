@@ -28,9 +28,10 @@ export default function Layout() {
   const resetProfile = useTerrainStore(s => s.resetProfile)
 
   return (
-    <div className="flex h-screen w-screen">
+    <div className="flex flex-col md:flex-row h-dvh w-screen overflow-hidden">
       {/* ═══════ 左侧: 3D 场景 ═══════ */}
-      <div className="relative flex-[2] bg-black min-w-0">
+     <div className="relative flex-none md:flex-[2] bg-black min-w-0
+                h-[55svh] md:h-full">
         <TerrainScene />
 
         {/* 左上角: 实时高程显示 (HUD) */}
@@ -92,9 +93,10 @@ export default function Layout() {
       </div>
 
       {/* ═══════ 右侧: 控制面板 ═══════ */}
-      <div className="flex-[1] flex flex-col bg-panel-bg border-l
-                      border-slate-700 overflow-y-auto min-w-[320px] max-w-[420px]">
-
+     <div className="flex-1 flex flex-col bg-panel-bg
+                border-t md:border-t-0 md:border-l border-slate-700
+                overflow-y-auto overscroll-contain [touch-action:pan-y]
+                md:min-w-[320px] md:max-w-[420px]">
         {/* ── 标题 ── */}
         <div className="p-4 border-b border-slate-700 flex-shrink-0">
           <h1 className="text-lg font-bold tracking-wide flex items-center gap-2">
@@ -298,3 +300,18 @@ function LegendItem({ color, label, style }) {
     </div>
   )
 }
+
+{/* 改前 */}
+<div className="p-3 border-t border-slate-700 text-center flex-shrink-0">
+  <p className="text-[9px] text-slate-600 font-mono">
+    Terrain Contour 3D v1.0 · R3F + GLSL + ECharts
+  </p>
+</div>
+
+{/* 改后：加 iPhone Home Indicator 安全区 */}
+<div className="p-3 border-t border-slate-700 text-center flex-shrink-0"
+     style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
+  <p className="text-[9px] text-slate-600 font-mono">
+    Terrain Contour 3D v1.0 · R3F + GLSL + ECharts
+  </p>
+</div>
