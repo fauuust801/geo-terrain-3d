@@ -1,41 +1,44 @@
 /* src/components/ProfileQuiz.css */
 
+/* ── 动画：桌面从右滑入 ─────────────────────────── */
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+/* ── 动画：手机从底部滑入 ───────────────────────── */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ══ 基础样式（桌面：右侧面板）══════════════════════ */
 .profile-quiz-overlay {
   position: fixed;
   top: 0;
-  right: 0;  /* ✅ 改：只占右侧 */
-  width: 500px;  /* ✅ 改：固定宽度 */
-  height: 100vh;
-  background-color: rgba(15, 23, 42, 0.98);  /* ✅ 改：半透明深色背景 */
+  right: 0;
+  width: 500px;
+  height: 100dvh;             /* ✅ 100vh → 100dvh */
+  background-color: rgba(15, 23, 42, 0.98);
   backdrop-filter: blur(8px);
   z-index: 1000;
   padding: 20px;
-  overflow-y: auto;  /* ✅ 新增：内容过多时可滚动 */
-  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);  /* ✅ 新增：左侧阴影 */
-  animation: slideIn 0.3s ease-out;  /* ✅ 新增：滑入动画 */
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.3s ease-out;
 }
 
 .profile-quiz-panel {
-  background-color: transparent;  /* ✅ 改：去掉多余背景 */
-  border: none;  /* ✅ 改：去掉边框 */
+  background-color: transparent;
+  border: none;
   padding: 0;
   width: 100%;
 }
 
 .quiz-header {
   display: flex;
-  flex-direction: column;  /* ✅ 改：垂直排列 */
+  flex-direction: column;
   gap: 12px;
   margin-bottom: 20px;
   padding-bottom: 16px;
@@ -68,16 +71,17 @@
   border: 1px solid #ef4444;
 }
 
+/* 桌面：单列，选项图表可以高一些 */
 .quiz-grid {
   display: grid;
-  grid-template-columns: 1fr;  /* ✅ 改：单列布局（右侧空间窄） */
+  grid-template-columns: 1fr;
   gap: 16px;
   margin-bottom: 20px;
 }
 
 .quiz-option {
   position: relative;
-  min-height: 180px;  /* ✅ 改：减小高度 */
+  min-height: 180px;
   background-color: rgba(30, 41, 59, 0.5);
   border-radius: 8px;
   overflow: hidden;
@@ -111,4 +115,72 @@
 
 .reset-button:hover {
   background-color: #2563eb;
+}
+
+
+/* ══ 手机端（≤767px）：底部弹出 Sheet ═══════════════ */
+@media (max-width: 767px) {
+
+  .profile-quiz-overlay {
+    /* ✅ 取消右侧面板定位，改为底部 Sheet */
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: auto;
+    max-height: 85svh;          /* 最高占 85% 可视高度，留出地形预览 */
+
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.6);
+
+    /* ✅ 换成从底部滑入 */
+    animation: slideUp 0.3s ease-out;
+
+    /* ✅ iPhone Home Indicator 安全区 */
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+
+  /* ✅ 顶部拖拽指示条（手机 Bottom Sheet 标准视觉） */
+  .profile-quiz-overlay::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    background: #475569;
+    border-radius: 2px;
+    margin: 0 auto 16px;
+    flex-shrink: 0;
+  }
+
+  /* ✅ 2×2 网格，四个选项一屏放得下 */
+  .quiz-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  /* ✅ 图表高度适配手机 */
+  .quiz-option {
+    min-height: 130px;
+  }
+
+  .quiz-header {
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+  }
+
+  .quiz-header h3 {
+    font-size: 14px;
+  }
+
+  .result-badge {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+
+  .reset-button {
+    padding: 10px;
+    font-size: 13px;
+  }
 }
