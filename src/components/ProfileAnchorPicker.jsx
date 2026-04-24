@@ -14,11 +14,11 @@ function AnchorMarker({ position, color }) {
 
   return (
     <mesh position={[position.x, y + 0.12, position.z]}>
-      <sphereGeometry args={[0.5, 16, 16]} />
+      <sphereGeometry args={[0.12, 12, 12]} />
       <meshStandardMaterial
         color={color}
         emissive={color}
-        emissiveIntensity={0.5}
+        emissiveIntensity={0.12}
       />
     </mesh>
   )
